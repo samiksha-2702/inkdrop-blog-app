@@ -1,0 +1,300 @@
+{% extends "base.html" %}
+{% block title %}{{ post.title }} — InkDrop{% endblock %}
+
+{% block extra_css %}
+<style>
+  .article-header {
+    max-width: var(--col);
+    margin: 3rem auto 0;
+    padding: 0 2rem;
+    text-align: center;
+  }
+  .article-cats { margin-bottom: 1.25rem; display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
+  .article-title {
+    font-family: var(--font-head);
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    font-weight: 700; line-height: 1.15;
+    letter-spacing: -.03em; margin-bottom: 1.5rem;
+  }
+  .article-byline {
+    display: flex; align-items: center; justify-content: center;
+    gap: 1.5rem; flex-wrap: wrap;
+    font-size: .82rem; color: var(--ink-3);
+    padding-bottom: 2rem; border-bottom: var(--rule);
+  }
+  .article-byline a { color: var(--ink-2); text-decoration: none; font-weight: 500; }
+  .article-byline a:hover { color: var(--accent); }
+  .article-actions { display: flex; align-items: center; gap: 8px; }
+
+  .article-cover {
+    max-width: 900px; margin: 2rem auto;
+    padding: 0 2rem;
+  }
+  .article-cover img {
+    width: 100%; max-height: 480px; object-fit: cover;
+    border-radius: var(--radius); display: block;
+  }
+
+  .article-body {
+    max-width: var(--col); margin: 2.5rem auto;
+    padding: 0 2rem;
+    font-size: 1.1rem; line-height: 1.9; color: var(--ink-2);
+    font-weight: 300;
+  }
+  .article-body p { margin-bottom: 1.5em; }
+
+  .article-tags {
+    max-width: var(--col); margin: 0 auto 2rem;
+    padding: 0 2rem;
+    display: flex; gap: 8px; flex-wrap: wrap;
+  }
+
+  /* Reactions bar */
+  .reactions-bar {
+    max-width: var(--col); margin: 0 auto 3rem;
+    padding: 0 2rem;
+    border-top: var(--rule); border-bottom: var(--rule);
+    padding-top: 1.25rem; padding-bottom: 1.25rem;
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  }
+  .react-btn {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 8px 18px; border-radius: 999px;
+    border: 1px solid var(--paper-3);
+    background: var(--paper-2); cursor: pointer;
+    font-family: var(--font-body); font-size: .82rem;
+    font-weight: 500; color: var(--ink-2);
+    text-decoration: none; transition: all .2s;
+  }
+  .react-btn:hover { border-color: var(--ink-2); background: var(--paper); }
+  .react-btn.liked { background: #fef2f2; border-color: var(--accent); color: var(--accent); }
+  .react-btn.bookmarked { background: #eff6ff; border-color: #3b82f6; color: #1d4ed8; }
+  .author-edit-links { margin-left: auto; display: flex; gap: 8px; }
+
+  /* Comments */
+  .comments-section {
+    max-width: var(--col); margin: 0 auto 4rem;
+    padding: 0 2rem;
+  }
+  .comments-head {
+    font-family: var(--font-head); font-size: 1.4rem;
+    font-weight: 700; margin-bottom: 2rem;
+    letter-spacing: -.01em;
+  }
+  .comment-form-box {
+    border: var(--rule); border-radius: var(--radius);
+    padding: 1.5rem; margin-bottom: 2.5rem;
+    background: var(--paper-2);
+  }
+  .comment-form-title {
+    font-size: .75rem; letter-spacing: .12em; text-transform: uppercase;
+    font-weight: 500; color: var(--ink-3); margin-bottom: 1rem;
+  }
+  .comment-card {
+    padding: 1.25rem 0; border-bottom: var(--rule);
+  }
+  .comment-card:last-child { border-bottom: none; }
+  .comment-author {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 10px;
+  }
+  .avatar-circle {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: var(--paper-3); display: flex; align-items: center;
+    justify-content: center; font-size: .8rem; font-weight: 500;
+    color: var(--ink-2); flex-shrink: 0; text-transform: uppercase;
+    border: 1px solid var(--paper-3);
+  }
+  .comment-meta { font-size: .8rem; color: var(--ink-3); }
+  .comment-meta strong { color: var(--ink-2); font-weight: 500; }
+  .comment-body { font-size: .95rem; color: var(--ink-2); line-height: 1.7; }
+  .reply-toggle {
+    background: none; border: none; cursor: pointer;
+    font-size: .75rem; letter-spacing: .06em; text-transform: uppercase;
+    font-weight: 500; color: var(--ink-3); padding: 6px 0;
+    font-family: var(--font-body); margin-top: 8px;
+    transition: color .2s;
+  }
+  .reply-toggle:hover { color: var(--accent); }
+  .reply-form {
+    margin-top: 12px; padding: 14px; background: var(--paper-2);
+    border-radius: var(--radius); border: var(--rule); display: none;
+  }
+  .replies { margin-left: 2.5rem; border-left: 2px solid var(--paper-3); padding-left: 1.25rem; }
+  .reply-card { padding: .75rem 0; border-bottom: 1px solid var(--paper-3); }
+  .reply-card:last-child { border-bottom: none; }
+  .login-to-comment {
+    padding: 1.5rem; border: var(--rule); border-radius: var(--radius);
+    text-align: center; font-size: .9rem; color: var(--ink-3);
+    margin-bottom: 2rem; background: var(--paper-2);
+  }
+  .login-to-comment a { color: var(--accent); text-decoration: none; font-weight: 500; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="article-header fade-up">
+  <div class="article-cats">
+    {% for cat in post.categories.all %}
+      <a href="/?category={{ cat.slug }}" class="cat-badge">{{ cat.name }}</a>
+    {% endfor %}
+  </div>
+  <h1 class="article-title">{{ post.title }}</h1>
+  <div class="article-byline">
+    <span>By <a href="{% url 'profile' post.author.username %}">{{ post.author.username }}</a></span>
+    <span>{{ post.created_at|date:"F j, Y" }}</span>
+    <span>{{ post.updated_at|date:"g:i A" }}</span>
+    {% if user == post.author %}
+      <div class="article-actions">
+        <a href="{% url 'post_edit' post.slug %}" class="btn btn-ghost" style="padding:4px 14px;font-size:.72rem;">Edit</a>
+        <a href="{% url 'post_delete' post.slug %}" class="btn btn-ghost" style="padding:4px 14px;font-size:.72rem;color:var(--accent);border-color:var(--accent);">Delete</a>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+{% if post.cover %}
+<div class="article-cover fade-up" style="animation-delay:.1s">
+  <img src="{{ post.cover.url }}" alt="{{ post.title }}" />
+</div>
+{% endif %}
+
+<div class="article-body fade-up" style="animation-delay:.15s">
+  {{ post.body|linebreaks }}
+</div>
+
+{% if post.tags.all %}
+<div class="article-tags fade-up" style="animation-delay:.2s">
+  {% for tag in post.tags.all %}
+    <a href="/?tag={{ tag.slug }}" class="tag-pill">#{{ tag.name }}</a>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- Reactions -->
+<div class="reactions-bar fade-up" style="animation-delay:.25s">
+  <a href="{% url 'toggle_like' post.slug %}" id="like-btn"
+     class="react-btn {% if is_liked %}liked{% endif %}">
+    <svg width="15" height="15" viewBox="0 0 24 24"
+         fill="{% if is_liked %}var(--accent){% else %}none{% endif %}"
+         stroke="{% if is_liked %}var(--accent){% else %}currentColor{% endif %}" stroke-width="2">
+      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+    </svg>
+    <span id="like-count">{{ post.total_likes }}</span> Likes
+  </a>
+
+  <a href="{% url 'toggle_bookmark' post.slug %}" id="bm-btn"
+     class="react-btn {% if is_bookmarked %}bookmarked{% endif %}">
+    <svg width="15" height="15" viewBox="0 0 24 24"
+         fill="{% if is_bookmarked %}#3b82f6{% else %}none{% endif %}"
+         stroke="{% if is_bookmarked %}#3b82f6{% else %}currentColor{% endif %}" stroke-width="2">
+      <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+    </svg>
+    <span id="bm-count">{{ post.total_bookmarks }}</span> Bookmarks
+  </a>
+
+  <span style="margin-left:auto;font-size:.8rem;color:var(--ink-3);">
+    {{ post.total_comments }} comment{{ post.total_comments|pluralize }}
+  </span>
+</div>
+
+<!-- Comments section -->
+<div class="comments-section fade-up" style="animation-delay:.3s">
+  <h3 class="comments-head">{{ post.total_comments }} Comment{{ post.total_comments|pluralize }}</h3>
+
+  {% if user.is_authenticated %}
+  <div class="comment-form-box">
+    <p class="comment-form-title">Leave a comment</p>
+    <form method="post">
+      {% csrf_token %}
+      <div class="form-group">
+        {{ form }}
+      </div>
+      <button type="submit" class="btn btn-primary">Post Comment</button>
+    </form>
+  </div>
+  {% else %}
+  <div class="login-to-comment">
+    <a href="{% url 'login' %}">Sign in</a> or <a href="{% url 'register' %}">create an account</a> to join the conversation.
+  </div>
+  {% endif %}
+
+  {% for comment in comments %}
+  <div class="comment-card">
+    <div class="comment-author">
+      <div class="avatar-circle">{{ comment.author.username|first }}</div>
+      <div class="comment-meta">
+        <strong>{{ comment.author.username }}</strong> · {{ comment.created_at|timesince }} ago
+      </div>
+    </div>
+    <p class="comment-body">{{ comment.body }}</p>
+
+    {% if user.is_authenticated %}
+    <button class="reply-toggle" onclick="toggleReply('reply-{{ comment.id }}')">↩ Reply</button>
+    <div class="reply-form" id="reply-{{ comment.id }}">
+      <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="parent_id" value="{{ comment.id }}" />
+        <textarea name="body" class="form-control" rows="2" placeholder="Write a reply…" style="margin-bottom:10px;"></textarea>
+        <button type="submit" class="btn btn-primary" style="padding:6px 16px;font-size:.75rem;">Reply</button>
+      </form>
+    </div>
+    {% endif %}
+
+    {% if comment.replies.all %}
+    <div class="replies">
+      {% for reply in comment.replies.all %}
+      <div class="reply-card">
+        <div class="comment-author">
+          <div class="avatar-circle" style="width:26px;height:26px;font-size:.7rem;">{{ reply.author.username|first }}</div>
+          <div class="comment-meta">
+            <strong>{{ reply.author.username }}</strong> · {{ reply.created_at|timesince }} ago
+          </div>
+        </div>
+        <p class="comment-body" style="font-size:.9rem;">{{ reply.body }}</p>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+  {% empty %}
+  <p style="color:var(--ink-3);font-size:.9rem;text-align:center;padding:2rem 0;">No comments yet. Be the first to share your thoughts.</p>
+  {% endfor %}
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toggleReply(id) {
+  const el = document.getElementById(id);
+  el.style.display = el.style.display === 'block' ? 'none' : 'block';
+}
+
+async function ajaxToggle(btn, url, countId, activeClass) {
+  btn.addEventListener('click', async (e) => {
+    e.preventDefault();
+    try {
+      const res = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+      if (!res.ok) return;
+      const data = await res.json();
+      const key = Object.keys(data).find(k => k !== 'count');
+      document.getElementById(countId).textContent = data.count;
+      btn.classList.toggle(activeClass, data[key]);
+    } catch {}
+  });
+}
+
+ajaxToggle(
+  document.getElementById('like-btn'),
+  "{% url 'toggle_like' post.slug %}",
+  'like-count', 'liked'
+);
+ajaxToggle(
+  document.getElementById('bm-btn'),
+  "{% url 'toggle_bookmark' post.slug %}",
+  'bm-count', 'bookmarked'
+);
+</script>
+{% endblock %}

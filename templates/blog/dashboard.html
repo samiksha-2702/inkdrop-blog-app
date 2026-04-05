@@ -1,0 +1,219 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — InkDrop{% endblock %}
+
+{% block extra_css %}
+<style>
+  .dashboard-wrap {
+    max-width: var(--max); margin: 3rem auto; padding: 0 2rem;
+  }
+  .dashboard-header {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    margin-bottom: 2rem; padding-bottom: 1.5rem;
+    border-bottom: 3px double var(--ink); flex-wrap: wrap; gap: 1rem;
+  }
+  .dashboard-eyebrow {
+    font-size: .7rem; letter-spacing: .2em; text-transform: uppercase;
+    font-weight: 500; color: var(--accent); margin-bottom: .4rem;
+  }
+  .dashboard-title {
+    font-family: var(--font-head); font-size: 2.2rem;
+    font-weight: 700; letter-spacing: -.02em;
+  }
+
+  /* Stats row */
+  .dashboard-stats {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 1rem; margin-bottom: 2.5rem;
+  }
+  .stat-card {
+    border: var(--rule); border-radius: var(--radius);
+    padding: 1.25rem; background: #fff; text-align: center;
+  }
+  .stat-card-num {
+    font-family: var(--font-head); font-size: 2.5rem;
+    font-weight: 700; letter-spacing: -.03em; line-height: 1;
+    margin-bottom: .25rem;
+  }
+  .stat-card-label {
+    font-size: .7rem; letter-spacing: .14em; text-transform: uppercase;
+    font-weight: 500; color: var(--ink-3);
+  }
+
+  /* Tabs */
+  .tab-nav {
+    display: flex; border-bottom: var(--rule); margin-bottom: 2rem; gap: 0;
+  }
+  .tab-btn {
+    background: none; border: none; cursor: pointer;
+    font-family: var(--font-body); font-size: .8rem;
+    letter-spacing: .1em; text-transform: uppercase; font-weight: 500;
+    color: var(--ink-3); padding: 10px 20px;
+    border-bottom: 2px solid transparent; margin-bottom: -1px;
+    transition: all .2s;
+  }
+  .tab-btn:hover { color: var(--ink); }
+  .tab-btn.active { color: var(--ink); border-bottom-color: var(--ink); }
+  .tab-count {
+    display: inline-block; background: var(--paper-3);
+    font-size: .65rem; padding: 1px 7px; border-radius: 999px;
+    margin-left: 5px; font-weight: 500; color: var(--ink-2);
+  }
+  .tab-pane { display: none; }
+  .tab-pane.active { display: block; }
+
+  /* Post rows */
+  .dash-post-row {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    padding: 1.25rem 0; border-bottom: var(--rule); gap: 1rem;
+  }
+  .dash-post-row:last-child { border-bottom: none; }
+  .status-badge {
+    display: inline-block; font-size: .6rem; letter-spacing: .1em;
+    text-transform: uppercase; font-weight: 500; padding: 3px 8px;
+    border-radius: 2px; margin-bottom: .4rem;
+  }
+  .status-published { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+  .status-draft { background: var(--paper-2); color: var(--ink-3); border: 1px solid var(--paper-3); }
+  .dash-post-title {
+    font-family: var(--font-head); font-size: 1.05rem;
+    font-weight: 700; letter-spacing: -.01em; margin-bottom: .3rem;
+  }
+  .dash-post-title a { color: var(--ink); text-decoration: none; }
+  .dash-post-title a:hover { color: var(--accent); }
+  .dash-post-meta { font-size: .78rem; color: var(--ink-3); display: flex; gap: 12px; }
+  .dash-row-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+  .empty-tab {
+    text-align: center; padding: 3rem; color: var(--ink-3); font-size: .9rem;
+  }
+  .empty-tab a { color: var(--accent); text-decoration: none; }
+
+  @media (max-width: 600px) {
+    .dashboard-stats { grid-template-columns: 1fr; }
+    .tab-btn { padding: 10px 12px; font-size: .72rem; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-wrap fade-up">
+
+  <div class="dashboard-header">
+    <div>
+      <p class="dashboard-eyebrow">Your workspace</p>
+      <h1 class="dashboard-title">Dashboard</h1>
+    </div>
+    <a href="{% url 'post_create' %}" class="btn btn-primary">+ New Story</a>
+  </div>
+
+  <!-- Stats -->
+  <div class="dashboard-stats">
+    <div class="stat-card">
+      <p class="stat-card-num">{{ posts|length }}</p>
+      <p class="stat-card-label">Total stories</p>
+    </div>
+    <div class="stat-card">
+      <p class="stat-card-num">{{ bookmarks|length }}</p>
+      <p class="stat-card-label">Bookmarked</p>
+    </div>
+    <div class="stat-card">
+      <p class="stat-card-num">{{ liked|length }}</p>
+      <p class="stat-card-label">Liked</p>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tab-nav">
+    <button class="tab-btn active" onclick="showTab('my-posts', this)">
+      My Stories <span class="tab-count">{{ posts|length }}</span>
+    </button>
+    <button class="tab-btn" onclick="showTab('bookmarks', this)">
+      Bookmarks <span class="tab-count">{{ bookmarks|length }}</span>
+    </button>
+    <button class="tab-btn" onclick="showTab('liked', this)">
+      Liked <span class="tab-count">{{ liked|length }}</span>
+    </button>
+  </div>
+
+  <!-- My posts -->
+  <div class="tab-pane active" id="my-posts">
+    {% for post in posts %}
+    <div class="dash-post-row">
+      <div style="flex:1;min-width:0;">
+        <span class="status-badge status-{{ post.status }}">{{ post.status }}</span>
+        <div class="dash-post-title">
+          <a href="{{ post.get_absolute_url }}">{{ post.title }}</a>
+        </div>
+        <div class="dash-post-meta">
+          <span>{{ post.created_at|date:"M j, Y" }}</span>
+          <span>{{ post.total_likes }} likes</span>
+          <span>{{ post.total_comments }} comments</span>
+        </div>
+      </div>
+      <div class="dash-row-actions">
+        <a href="{{ post.get_absolute_url }}" class="btn btn-ghost" style="padding:5px 12px;font-size:.72rem;">View</a>
+        <a href="{% url 'post_edit' post.slug %}" class="btn btn-ghost" style="padding:5px 12px;font-size:.72rem;">Edit</a>
+        <a href="{% url 'post_delete' post.slug %}" class="btn btn-ghost" style="padding:5px 12px;font-size:.72rem;color:var(--accent);border-color:var(--accent);">Del</a>
+      </div>
+    </div>
+    {% empty %}
+    <div class="empty-tab">
+      No stories yet. <a href="{% url 'post_create' %}">Write your first one →</a>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Bookmarks -->
+  <div class="tab-pane" id="bookmarks">
+    {% for post in bookmarks %}
+    <div class="dash-post-row">
+      <div style="flex:1;min-width:0;">
+        <div class="dash-post-title">
+          <a href="{{ post.get_absolute_url }}">{{ post.title }}</a>
+        </div>
+        <div class="dash-post-meta">
+          <span>By <a href="{% url 'profile' post.author.username %}" style="color:var(--ink-2);text-decoration:none;">{{ post.author.username }}</a></span>
+          <span>{{ post.created_at|date:"M j, Y" }}</span>
+        </div>
+      </div>
+      <a href="{{ post.get_absolute_url }}" class="btn btn-ghost" style="padding:5px 12px;font-size:.72rem;flex-shrink:0;">Read</a>
+    </div>
+    {% empty %}
+    <div class="empty-tab">No bookmarks yet. Find a story you love and save it.</div>
+    {% endfor %}
+  </div>
+
+  <!-- Liked -->
+  <div class="tab-pane" id="liked">
+    {% for post in liked %}
+    <div class="dash-post-row">
+      <div style="flex:1;min-width:0;">
+        <div class="dash-post-title">
+          <a href="{{ post.get_absolute_url }}">{{ post.title }}</a>
+        </div>
+        <div class="dash-post-meta">
+          <span>By <a href="{% url 'profile' post.author.username %}" style="color:var(--ink-2);text-decoration:none;">{{ post.author.username }}</a></span>
+          <span>{{ post.created_at|date:"M j, Y" }}</span>
+          <span>{{ post.total_likes }} total likes</span>
+        </div>
+      </div>
+      <a href="{{ post.get_absolute_url }}" class="btn btn-ghost" style="padding:5px 12px;font-size:.72rem;flex-shrink:0;">Read</a>
+    </div>
+    {% empty %}
+    <div class="empty-tab">No liked posts yet. Explore stories and show some love.</div>
+    {% endfor %}
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function showTab(id, btn) {
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+</script>
+{% endblock %}

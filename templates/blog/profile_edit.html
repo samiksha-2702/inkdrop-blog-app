@@ -1,0 +1,504 @@
+{% extends "base.html" %}
+{% block title %}Edit Profile — InkDrop{% endblock %}
+
+{% block extra_css %}
+<style>
+  .edit-wrap {
+    max-width: 720px;
+    margin: 3rem auto;
+    padding: 0 2rem;
+  }
+  
+  /* Header Section */
+  .edit-header {
+    margin-bottom: 2.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 3px double var(--ink);
+    position: relative;
+  }
+  .edit-eyebrow {
+    font-size: .7rem;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    font-weight: 500;
+    color: var(--accent);
+    margin-bottom: .5rem;
+    display: inline-block;
+  }
+  .edit-title {
+    font-family: var(--font-head);
+    font-size: 2.2rem;
+    font-weight: 700;
+    letter-spacing: -.02em;
+    margin: 0;
+  }
+  
+  /* Form Sections */
+  .form-section {
+    margin-bottom: 2.5rem;
+    padding-bottom: 2.5rem;
+    border-bottom: 1px solid var(--paper-2);
+    transition: all 0.3s ease;
+  }
+  .form-section:last-of-type {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+  }
+  .form-section-title {
+    font-size: .75rem;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: var(--accent);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .form-section-title::before {
+    content: '';
+    width: 24px;
+    height: 2px;
+    background: var(--accent);
+    display: inline-block;
+  }
+  
+  /* Form Layout */
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 0;
+  }
+  .form-group {
+    margin-bottom: 1.5rem;
+  }
+  .form-group:last-child {
+    margin-bottom: 0;
+  }
+  
+  /* Form Elements */
+  .form-label {
+    display: block;
+    font-size: .8rem;
+    font-weight: 500;
+    margin-bottom: .5rem;
+    color: var(--ink);
+    letter-spacing: 0.3px;
+  }
+  .form-label span {
+    color: var(--accent);
+    margin-left: 4px;
+  }
+  
+  input, textarea {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid var(--paper-2);
+    border-radius: 8px;
+    background: var(--paper);
+    font-size: .95rem;
+    transition: all 0.3s ease;
+    font-family: inherit;
+  }
+  
+  input:focus, textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.1);
+    background: white;
+  }
+  
+  input:hover, textarea:hover {
+    border-color: var(--ink-3);
+  }
+  
+  textarea {
+    resize: vertical;
+    min-height: 120px;
+    line-height: 1.6;
+  }
+  
+  /* File Input Styling */
+  input[type="file"] {
+    padding: 8px;
+    background: var(--paper);
+    border: 1px dashed var(--paper-2);
+    cursor: pointer;
+  }
+  
+  input[type="file"]:hover {
+    border-color: var(--accent);
+    background: rgba(236, 72, 153, 0.02);
+  }
+  
+  /* Avatar Preview */
+  .avatar-preview {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 1rem;
+    padding: 1rem;
+    background: var(--paper-2);
+    border-radius: 12px;
+    transition: all 0.3s ease;
+  }
+  .avatar-preview-img {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid white;
+    box-shadow: var(--shadow-sm);
+  }
+  .avatar-preview-info {
+    flex: 1;
+  }
+  .avatar-preview-name {
+    font-size: .8rem;
+    color: var(--ink-2);
+    font-family: var(--font-mono);
+  }
+  .avatar-preview-action {
+    font-size: .75rem;
+    color: var(--accent);
+    cursor: pointer;
+    text-decoration: none;
+  }
+  
+  /* Error Messages */
+  .error-message {
+    color: #e53e3e;
+    font-size: .75rem;
+    margin-top: 6px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .help-text {
+    font-size: .7rem;
+    color: var(--ink-3);
+    margin-top: 6px;
+    line-height: 1.4;
+  }
+  
+  /* Buttons */
+  .form-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+    padding-top: 1rem;
+  }
+  .btn {
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: .9rem;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    border: none;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(236, 72, 153, 0.3);
+  }
+  .btn-ghost {
+    background: transparent;
+    color: var(--ink-2);
+    border: 1px solid var(--paper-2);
+  }
+  .btn-ghost:hover {
+    background: var(--paper-2);
+    border-color: var(--ink-3);
+  }
+  
+  /* Character Counter */
+  .char-counter {
+    font-size: .7rem;
+    color: var(--ink-3);
+    text-align: right;
+    margin-top: 4px;
+  }
+  .char-counter.warning {
+    color: #e67e22;
+  }
+  .char-counter.danger {
+    color: #e53e3e;
+  }
+  
+  /* Responsive */
+  @media (max-width: 600px) {
+    .edit-wrap {
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+    .form-row {
+      grid-template-columns: 1fr;
+      gap: 0;
+    }
+    .form-actions {
+      flex-direction: column;
+    }
+    .btn {
+      justify-content: center;
+    }
+  }
+  
+  /* Animation */
+  .fade-up {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeUp 0.6s ease forwards;
+  }
+  @keyframes fadeUp {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="edit-wrap fade-up">
+  <div class="edit-header">
+    <p class="edit-eyebrow">Account Settings</p>
+    <h1 class="edit-title">Edit Profile</h1>
+  </div>
+
+  <form method="post" enctype="multipart/form-data" id="profileForm">
+    {% csrf_token %}
+
+    <!-- Account info -->
+    <div class="form-section">
+      <p class="form-section-title">Account Information</p>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="{{ u_form.username.id_for_label }}">
+            Username <span>*</span>
+          </label>
+          {{ u_form.username }}
+          {% if u_form.username.errors %}
+            {% for err in u_form.username.errors %}
+              <div class="error-message">⚠️ {{ err }}</div>
+            {% endfor %}
+          {% endif %}
+          <div class="help-text">This will be visible to everyone</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="{{ u_form.email.id_for_label }}">
+            Email Address <span>*</span>
+          </label>
+          {{ u_form.email }}
+          {% if u_form.email.errors %}
+            {% for err in u_form.email.errors %}
+              <div class="error-message">⚠️ {{ err }}</div>
+            {% endfor %}
+          {% endif %}
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="{{ u_form.first_name.id_for_label }}">First Name</label>
+          {{ u_form.first_name }}
+          <div class="help-text">Optional, but helps people recognize you</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="{{ u_form.last_name.id_for_label }}">Last Name</label>
+          {{ u_form.last_name }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Profile info -->
+    <div class="form-section">
+      <p class="form-section-title">Profile Details</p>
+      
+      <div class="form-group">
+        <label class="form-label" for="{{ p_form.avatar.id_for_label }}">Profile Photo</label>
+        {{ p_form.avatar }}
+        
+        <!-- Live avatar preview -->
+        {% if p_form.instance.avatar %}
+          <div class="avatar-preview" id="avatarPreview">
+            <img src="{{ p_form.instance.avatar.url }}" alt="Current avatar" class="avatar-preview-img" id="currentAvatar">
+            <div class="avatar-preview-info">
+              <div class="avatar-preview-name">Current: {{ p_form.instance.avatar.name|truncatechars:30 }}</div>
+              <label class="avatar-preview-action" for="{{ p_form.avatar.id_for_label }}">Change photo ↻</label>
+            </div>
+          </div>
+        {% else %}
+          <div class="avatar-preview" id="avatarPreview" style="display: none;">
+            <img src="" alt="New avatar" class="avatar-preview-img" id="newAvatar">
+            <div class="avatar-preview-info">
+              <div class="avatar-preview-name" id="avatarName"></div>
+            </div>
+          </div>
+        {% endif %}
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label" for="{{ p_form.bio.id_for_label }}">Bio</label>
+        {{ p_form.bio }}
+        <div class="char-counter" id="bioCounter">
+          <span id="bioLength">0</span>/500 characters
+        </div>
+        <div class="help-text">Tell readers who you are and what you write about</div>
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label" for="{{ p_form.website.id_for_label }}">Website</label>
+        {{ p_form.website }}
+        <div class="help-text">Your personal website or portfolio</div>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary" id="submitBtn">
+        💾 Save Changes
+      </button>
+      <a href="{% url 'profile' request.user.username %}" class="btn btn-ghost">
+        ← Cancel
+      </a>
+    </div>
+
+  </form>
+</div>
+
+<script>
+  // Live avatar preview
+  const avatarInput = document.getElementById('{{ p_form.avatar.id_for_label }}');
+  const avatarPreview = document.getElementById('avatarPreview');
+  const newAvatarImg = document.getElementById('newAvatar');
+  const avatarName = document.getElementById('avatarName');
+  const currentAvatar = document.getElementById('currentAvatar');
+  
+  if (avatarInput) {
+    avatarInput.addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          if (currentAvatar) {
+            // If there's a current avatar, update the preview
+            currentAvatar.src = e.target.result;
+          } else if (newAvatarImg) {
+            // If no current avatar, show the preview section
+            avatarPreview.style.display = 'flex';
+            newAvatarImg.src = e.target.result;
+            avatarName.textContent = file.name;
+          }
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+  }
+  
+  // Character counter for bio
+  const bioField = document.getElementById('{{ p_form.bio.id_for_label }}');
+  const bioCounter = document.getElementById('bioLength');
+  const maxBioLength = 500;
+  
+  if (bioField && bioCounter) {
+    function updateBioCounter() {
+      const length = bioField.value.length;
+      bioCounter.textContent = length;
+      
+      const counterDiv = document.getElementById('bioCounter');
+      if (length > maxBioLength - 50) {
+        counterDiv.classList.add('warning');
+      } else {
+        counterDiv.classList.remove('warning');
+      }
+      if (length > maxBioLength) {
+        counterDiv.classList.add('danger');
+      } else {
+        counterDiv.classList.remove('danger');
+      }
+    }
+    
+    // Initial update
+    updateBioCounter();
+    
+    // Update on input
+    bioField.addEventListener('input', updateBioCounter);
+  }
+  
+  // Form validation before submit
+  const form = document.getElementById('profileForm');
+  const submitBtn = document.getElementById('submitBtn');
+  
+  form.addEventListener('submit', function(e) {
+    // Check if bio exceeds max length
+    if (bioField && bioField.value.length > maxBioLength) {
+      e.preventDefault();
+      alert(`Your bio is too long! Maximum ${maxBioLength} characters.`);
+      bioField.focus();
+      return false;
+    }
+    
+    // Show loading state
+    submitBtn.innerHTML = '⏳ Saving...';
+    submitBtn.disabled = true;
+  });
+  
+  // Optional: Auto-save indicator
+  let autoSaveTimeout;
+  const formFields = document.querySelectorAll('input, textarea');
+  
+  function showAutoSaveIndicator() {
+    const indicator = document.createElement('div');
+    indicator.id = 'autoSaveIndicator';
+    indicator.textContent = '✨ Changes auto-saved';
+    indicator.style.cssText = `
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--accent);
+      color: white;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+      z-index: 1000;
+    `;
+    document.body.appendChild(indicator);
+    
+    setTimeout(() => {
+      indicator.style.opacity = '1';
+      setTimeout(() => {
+        indicator.style.opacity = '0';
+        setTimeout(() => {
+          indicator.remove();
+        }, 300);
+      }, 2000);
+    }, 10);
+  }
+  
+  // Note: Auto-save would require AJAX implementation
+  // This is just a visual indicator for now
+  
+  // Add input focus effects
+  formFields.forEach(field => {
+    field.addEventListener('focus', function() {
+      this.parentElement.classList.add('focused');
+    });
+    field.addEventListener('blur', function() {
+      this.parentElement.classList.remove('focused');
+    });
+  });
+</script>
+
+{% endblock %}

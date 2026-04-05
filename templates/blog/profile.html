@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+{% block title %}{{ profile_user.username }} — InkDrop{% endblock %}
+
+{% block extra_css %}
+<style>
+  .profile-banner {
+    background: var(--ink);
+    height: 180px;
+    position: relative;
+  }
+  .profile-banner::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 40px,
+      rgba(255,255,255,.02) 40px,
+      rgba(255,255,255,.02) 41px
+    );
+  }
+  .profile-body {
+    max-width: var(--max); margin: 0 auto;
+    padding: 0 2rem;
+  }
+  .profile-card-row {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    margin-top: -50px; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;
+  }
+  .profile-left { display: flex; align-items: flex-end; gap: 1.5rem; }
+  .profile-avatar {
+    width: 100px; height: 100px; border-radius: 50%;
+    border: 4px solid var(--paper);
+    background: var(--paper-3);
+    overflow: hidden; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .profile-avatar-letter {
+    font-family: var(--font-head); font-size: 2.5rem;
+    font-weight: 700; color: var(--ink-2); text-transform: uppercase;
+  }
+  .profile-name-block { padding-bottom: .5rem; }
+  .profile-name {
+    font-family: var(--font-head); font-size: 1.8rem;
+    font-weight: 700; letter-spacing: -.02em; line-height: 1.1;
+  }
+  .profile-handle { font-size: .85rem; color: var(--ink-3); margin-top: 2px; }
+  .profile-actions { display: flex; gap: 8px; padding-bottom: .5rem; }
+
+  .profile-stats {
+    display: flex; gap: 2.5rem; margin-bottom: 1.5rem;
+    padding: 1.25rem 0; border-top: var(--rule); border-bottom: var(--rule);
+  }
+  .profile-stat { text-align: center; }
+  .profile-stat-num {
+    font-family: var(--font-head); font-size: 1.6rem; font-weight: 700;
+    letter-spacing: -.02em; line-height: 1;
+  }
+  .profile-stat-label { font-size: .72rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); font-weight: 500; }
+
+  .profile-bio { max-width: 560px; color: var(--ink-2); margin-bottom: 2.5rem; }
+  .profile-website a { font-size: .85rem; color: var(--accent); text-decoration: none; }
+  .profile-website a:hover { text-decoration: underline; }
+
+  .profile-grid {
+    display: grid; grid-template-columns: 1fr 280px;
+    gap: 3rem; align-items: start;
+  }
+  .posts-head {
+    font-size: .65rem; letter-spacing: .18em; text-transform: uppercase;
+    font-weight: 500; color: var(--ink-3); margin-bottom: 1.5rem;
+    padding-bottom: .75rem; border-bottom: 3px double var(--ink);
+  }
+  .profile-post-card {
+    padding: 1.25rem 0; border-bottom: var(--rule);
+  }
+  .profile-post-card:last-child { border-bottom: none; }
+  .profile-post-title {
+    font-family: var(--font-head); font-size: 1.15rem;
+    font-weight: 700; margin-bottom: .4rem; letter-spacing: -.01em;
+  }
+  .profile-post-title a { color: var(--ink); text-decoration: none; }
+  .profile-post-title a:hover { color: var(--accent); }
+  .profile-post-meta { font-size: .8rem; color: var(--ink-3); display: flex; gap: 12px; flex-wrap: wrap; }
+
+  .no-posts { color: var(--ink-3); font-size: .9rem; padding: 2rem 0; }
+
+  @media (max-width: 768px) {
+    .profile-grid { grid-template-columns: 1fr; }
+    .profile-card-row { margin-top: -30px; }
+    .profile-avatar { width: 72px; height: 72px; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="profile-banner"></div>
+
+<div class="profile-body fade-up">
+  <div class="profile-card-row">
+    <div class="profile-left">
+      <div class="profile-avatar">
+        {% if profile_user.profile.avatar %}
+          <img src="{{ profile_user.profile.avatar.url }}" alt="{{ profile_user.username }}" />
+        {% else %}
+          <span class="profile-avatar-letter">{{ profile_user.username|first }}</span>
+        {% endif %}
+      </div>
+      <div class="profile-name-block">
+        <h1 class="profile-name">
+          {{ profile_user.get_full_name|default:profile_user.username }}
+        </h1>
+        <p class="profile-handle">@{{ profile_user.username }}</p>
+      </div>
+    </div>
+
+    <div class="profile-actions">
+      {% if request.user.is_authenticated and request.user != profile_user %}
+        <a href="{% url 'toggle_follow' profile_user.username %}"
+           class="btn {% if is_following %}btn-outline{% else %}btn-primary{% endif %}">
+          {% if is_following %}Following{% else %}Follow{% endif %}
+        </a>
+      {% endif %}
+      {% if request.user == profile_user %}
+        <a href="{% url 'profile_edit' %}" class="btn btn-ghost">Edit Profile</a>
+        <a href="{% url 'dashboard' %}" class="btn btn-outline">Dashboard</a>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="profile-stats">
+    <div class="profile-stat">
+      <p class="profile-stat-num">{{ posts|length }}</p>
+      <p class="profile-stat-label">Stories</p>
+    </div>
+    <div class="profile-stat">
+      <p class="profile-stat-num">{{ follower_count }}</p>
+      <p class="profile-stat-label">Followers</p>
+    </div>
+    <div class="profile-stat">
+      <p class="profile-stat-num">{{ following_count }}</p>
+      <p class="profile-stat-label">Following</p>
+    </div>
+  </div>
+
+  {% if profile_user.profile.bio %}
+    <p class="profile-bio">{{ profile_user.profile.bio }}</p>
+  {% endif %}
+  {% if profile_user.profile.website %}
+    <p class="profile-website" style="margin-bottom:2.5rem;">
+      <a href="{{ profile_user.profile.website }}" target="_blank" rel="noopener">
+        ↗ {{ profile_user.profile.website }}
+      </a>
+    </p>
+  {% endif %}
+
+  <div class="profile-grid">
+    <div>
+      <p class="posts-head">Stories by {{ profile_user.username }}</p>
+      {% for post in posts %}
+      <div class="profile-post-card">
+        <div style="display:flex;gap:8px;margin-bottom:.5rem;flex-wrap:wrap;">
+          {% for cat in post.categories.all %}
+            <a href="/?category={{ cat.slug }}" class="cat-badge" style="font-size:.6rem;">{{ cat.name }}</a>
+          {% endfor %}
+        </div>
+        <h3 class="profile-post-title">
+          <a href="{{ post.get_absolute_url }}">{{ post.title }}</a>
+        </h3>
+        <div class="profile-post-meta">
+          <span>{{ post.created_at|date:"M j, Y" }}</span>
+          <span>{{ post.total_likes }} likes</span>
+          <span>{{ post.total_comments }} comments</span>
+        </div>
+      </div>
+      {% empty %}
+        <p class="no-posts">No published stories yet.</p>
+      {% endfor %}
+    </div>
+
+    <!-- Right column placeholder for future widgets -->
+    <aside>
+      <div style="border:var(--rule);border-radius:var(--radius);padding:1.25rem;background:var(--paper-2);">
+        <p style="font-size:.65rem;letter-spacing:.18em;text-transform:uppercase;font-weight:500;color:var(--ink-3);margin-bottom:1rem;">About</p>
+        <p style="font-size:.875rem;color:var(--ink-2);">
+          Member since {{ profile_user.date_joined|date:"F Y" }}
+        </p>
+        {% if profile_user.profile.website %}
+        <p style="font-size:.875rem;margin-top:.5rem;">
+          <a href="{{ profile_user.profile.website }}" style="color:var(--accent);text-decoration:none;" target="_blank">Website ↗</a>
+        </p>
+        {% endif %}
+      </div>
+    </aside>
+  </div>
+</div>
+
+<div class="rule-deco container" style="margin-top:3rem;"></div>
+{% endblock %}

@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+{% block title %}{{ action }} Story — InkDrop{% endblock %}
+
+{% block extra_css %}
+<style>
+  .write-layout {
+    display: grid;
+    grid-template-columns: 1fr 260px;
+    gap: 3rem;
+    max-width: var(--max);
+    margin: 3rem auto;
+    padding: 0 2rem;
+    align-items: start;
+  }
+  .write-header {
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 3px double var(--ink);
+  }
+  .write-eyebrow {
+    font-size: .7rem; letter-spacing: .2em; text-transform: uppercase;
+    font-weight: 500; color: var(--accent); margin-bottom: .5rem;
+  }
+  .write-title {
+    font-family: var(--font-head); font-size: 2rem;
+    font-weight: 700; letter-spacing: -.02em;
+  }
+  #id_title {
+    font-family: var(--font-head);
+    font-size: 1.5rem; font-weight: 700;
+    letter-spacing: -.02em;
+    border: none; border-bottom: var(--rule);
+    border-radius: 0; padding: 12px 0;
+    background: transparent; width: 100%;
+    outline: none; color: var(--ink);
+  }
+  #id_title:focus { border-color: var(--ink); }
+  #id_body {
+    min-height: 400px; font-size: 1rem;
+    line-height: 1.85; border-radius: var(--radius);
+    width: 100%;
+  }
+  .write-panel {
+    border: var(--rule); border-radius: var(--radius);
+    overflow: hidden; margin-bottom: 1.25rem;
+    background: #fff;
+  }
+  .write-panel-head {
+    font-size: .65rem; letter-spacing: .18em; text-transform: uppercase;
+    font-weight: 500; color: var(--ink-3);
+    padding: 10px 14px; background: var(--paper-2);
+    border-bottom: var(--rule);
+  }
+  .write-panel-body { padding: 14px; }
+  .check-list { display: flex; flex-direction: column; gap: 6px; }
+  .check-list label {
+    display: flex; align-items: center; gap: 8px;
+    font-size: .875rem; cursor: pointer; color: var(--ink-2);
+    text-transform: none; letter-spacing: 0; font-weight: 300;
+  }
+  .check-list input[type=checkbox] { accent-color: var(--accent); width: 14px; height: 14px; }
+  .publish-actions { display: flex; flex-direction: column; gap: 8px; }
+  .error-text { color: var(--accent); font-size: .8rem; margin-top: 4px; }
+  .form-errors {
+    background: #fef2f2; border: 1px solid #fecaca;
+    padding: 1rem; border-radius: var(--radius);
+    margin-bottom: 1.5rem; color: #991b1b; font-size: .875rem;
+  }
+  @media (max-width: 768px) {
+    .write-layout { grid-template-columns: 1fr; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<form method="post" enctype="multipart/form-data">
+{% csrf_token %}
+
+<div class="write-layout fade-up">
+
+  <div>
+    <div class="write-header">
+      <p class="write-eyebrow">{{ action }} Story</p>
+      <h1 class="write-title">
+        {% if action == "Create" %}Tell your story{% else %}Edit your story{% endif %}
+      </h1>
+    </div>
+
+    {% if form.errors %}
+    <div class="form-errors">
+      <strong>Please fix the following errors:</strong>
+      {{ form.errors }}
+    </div>
+    {% endif %}
+
+    <div class="form-group">
+      <label class="form-label" for="id_title">Headline</label>
+      {{ form.title }}
+      {% for err in form.title.errors %}
+        <p class="error-text">{{ err }}</p>
+      {% endfor %}
+    </div>
+
+    <div class="form-group" style="margin-top:1.5rem;">
+      <label class="form-label" for="id_body">Body</label>
+      {{ form.body }}
+      {% for err in form.body.errors %}
+        <p class="error-text">{{ err }}</p>
+      {% endfor %}
+    </div>
+
+    <div class="form-group" style="margin-top:1.5rem;">
+      <label class="form-label" for="id_cover">Cover Image (optional)</label>
+      {{ form.cover }}
+      {% for err in form.cover.errors %}
+        <p class="error-text">{{ err }}</p>
+      {% endfor %}
+      {% if form.instance.cover %}
+        <p style="font-size:.8rem;color:var(--ink-3);margin-top:6px;">
+          Current: {{ form.instance.cover.name }}
+        </p>
+      {% endif %}
+    </div>
+  </div>
+
+  <aside>
+
+    <div class="write-panel">
+      <div class="write-panel-head">Publish settings</div>
+      <div class="write-panel-body">
+        <div class="form-group" style="margin-bottom:1rem;">
+          <label class="form-label" for="id_status">Status</label>
+<select name="status" id="id_status" class="form-control">
+  <option value="draft" {% if form.instance.status == 'draft' %}selected{% endif %}>Draft</option>
+  <option value="published" {% if form.instance.status == 'published' %}selected{% endif %}>Published</option>
+</select>
+        </div>
+        <div class="publish-actions">
+          <button type="submit" class="btn btn-primary" style="text-align:center;">
+            {% if action == "Create" %}Publish Story{% else %}Save Changes{% endif %}
+          </button>
+          <a href="{% url 'home' %}" class="btn btn-ghost" style="text-align:center;">Cancel</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="write-panel">
+      <div class="write-panel-head">Categories</div>
+      <div class="write-panel-body">
+        <div class="check-list">
+          {% for checkbox in form.categories %}
+            {{ checkbox }}
+          {% empty %}
+            <p style="font-size:.8rem;color:var(--ink-3);">No categories yet — create some in admin.</p>
+          {% endfor %}
+        </div>
+        {% for err in form.categories.errors %}
+          <p class="error-text">{{ err }}</p>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="write-panel">
+      <div class="write-panel-head">Tags</div>
+      <div class="write-panel-body">
+        <div class="check-list">
+          {% for checkbox in form.tags %}
+            {{ checkbox }}
+          {% empty %}
+            <p style="font-size:.8rem;color:var(--ink-3);">No tags yet — create some in admin.</p>
+          {% endfor %}
+        </div>
+        {% for err in form.tags.errors %}
+          <p class="error-text">{{ err }}</p>
+        {% endfor %}
+      </div>
+    </div>
+
+  </aside>
+
+</div>
+
+</form>
+
+{% endblock %}

@@ -21,7 +21,7 @@ A full-stack blogging platform built with Django. Supports post creation, editin
 ## Screenshots
 
 ### Register
-![Register](screenshots/register.png)
+![Register](screenshots/Register.png)
 
 ### Login
 ![Login](screenshots/login.png)

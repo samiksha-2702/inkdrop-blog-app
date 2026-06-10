@@ -18,6 +18,26 @@ A full-stack blogging platform built with Django. Supports post creation, editin
 | Database  | SQLite                           |
 | Auth      | Django built-in auth             |
 
+## Screenshots
+
+### Register
+![Register](screenshots/register.png)
+
+### Login
+![Login](screenshots/login.png)
+
+### Home
+![Home](screenshots/home.png)
+
+### Create Post
+![Create Post](screenshots/create-post.png)
+
+### Dashboard
+![Dashboard](screenshots/dashboard.png)
+
+### Edit Profile
+![Edit Profile](screenshots/edit-profile.png)
+
 ## Project Structure
 
 ```
@@ -26,6 +46,7 @@ InkDrop/
 ├── blog_project/      # Project settings and root URLs
 ├── templates/         # HTML templates
 ├── covers/            # Cover images
+├── screenshots/       # README screenshots
 ├── manage.py
 ├── requirements.txt
 └── README.md
